@@ -16,7 +16,7 @@ HTTP Request
                           ├── /answer-routed       → determine_complexity() → call_llm()
                           └── /conversation-turn   → prepare_context() → call_llm()
 
-                                   call_llm() [gateway/client.py — OTel CLIENT span]
+                                   call_llm() [src/llmscope/gateway/client.py — OTel CLIENT span]
                                      ├── RoutePolicy lookup
                                      ├── ProviderBase.complete()  → OpenAIProvider (default)
                                      ├── estimate_cost()
@@ -24,19 +24,19 @@ HTTP Request
                                      └── emit()  → OTel metrics + envelope-based JSONL
 ```
 
-The non-negotiable architectural invariant: every LLM provider call passes through `gateway/client.py`. No route handler, service, or middleware calls any provider API directly. This is what makes cost attribution complete and telemetry accurate.
+The non-negotiable architectural invariant: every LLM provider call passes through `src/llmscope/gateway/client.py`. No route handler, service, or middleware calls any provider API directly. This is what makes cost attribution complete and telemetry accurate.
 
 ## What is implemented
 
-**Gateway** — `gateway/client.py` is the single choke point for all LLM provider calls. Enforces route policy, measures latency, estimates cost, emits telemetry, handles retry with exponential backoff, and returns normalized results.
+**Gateway** — `src/llmscope/gateway/client.py` is the single choke point for all LLM provider calls. Enforces route policy, measures latency, estimates cost, emits telemetry, handles retry with exponential backoff, and returns normalized results.
 
-**Provider abstraction** — `gateway/provider.py` defines `ProviderBase`, an abstract base class that any LLM provider must subclass. Only two methods are required (`provider_name`, `complete`); error classification methods have safe defaults. `OpenAIProvider` and `AnthropicProvider` are included as built-in implementations. To add Google, Bedrock, or any other provider: subclass `ProviderBase`, register, and add pricing to the cost model. No other module changes.
+**Provider abstraction** — `src/llmscope/gateway/provider.py` defines `ProviderBase`, an abstract base class that any LLM provider must subclass. Only two methods are required (`provider_name`, `complete`); error classification methods have safe defaults. `OpenAIProvider` and `AnthropicProvider` are included as built-in implementations. To add Google, Bedrock, or any other provider: subclass `ProviderBase`, register, and add pricing to the cost model. No other module changes.
 
-**LLMRequestEnvelope** — `core/envelope.py` defines the versioned, runtime-agnostic contract for LLM request lifecycle. Six semantic blocks: identity/context, model selection, economics, reliability, governance, cache/eval. The envelope is constructed on every gateway call and serialized into the JSONL telemetry artifact, making the local artifact a direct representation of the typed contract.
+**LLMRequestEnvelope** — `src/llmscope/envelope.py` defines the versioned, runtime-agnostic contract for LLM request lifecycle. Six semantic blocks: identity/context, model selection, economics, reliability, governance, cache/eval. The envelope is constructed on every gateway call and serialized into the JSONL telemetry artifact, making the local artifact a direct representation of the typed contract.
 
 **OpenTelemetry instrumentation** — each gateway call produces an OTel `CLIENT` span nested under the FastAPI `SERVER` span and emits four metric instruments aligned with the GenAI semantic conventions: `gen_ai.client.token.usage`, `gen_ai.client.operation.duration`, `llm_gateway.estimated_cost_usd`, `llm_gateway.requests`. Backend-agnostic via OTLP — works unchanged with Grafana, Datadog, Jaeger, Honeycomb, or a self-hosted collector.
 
-**Semantic convention isolation** — `gateway/semconv.py` centralizes all GenAI attribute name strings and implements `resolve_attrs()` for dual-emission migration support via `OTEL_SEMCONV_STABILITY_OPT_IN`. No other module imports from `opentelemetry.semconv._incubating` directly.
+**Semantic convention isolation** — `src/llmscope/gateway/semconv.py` centralizes all GenAI attribute name strings and implements `resolve_attrs()` for dual-emission migration support via `OTEL_SEMCONV_STABILITY_OPT_IN`. No other module imports from `opentelemetry.semconv._incubating` directly.
 
 **Structured local telemetry** — in parallel with OTel emission, each gateway call serializes the `LLMRequestEnvelope` as a JSON line to `artifacts/logs/telemetry.jsonl`. Supports offline analysis and reporting without a running collector.
 
@@ -161,6 +161,29 @@ curl -X POST http://localhost:8000/conversation-turn \
 {"answer": "...", "turn_index": 2, "context_tokens_used": 15, "context_strategy_applied": "sliding_window"}
 ```
 
+## Project structure
+
+```
+llmscope/
+├── src/llmscope/              ← pip-installable library
+│   ├── __init__.py            ← public API surface
+│   ├── py.typed               ← PEP 561 marker
+│   ├── envelope.py            ← LLMRequestEnvelope contract
+│   ├── semconv.py             ← llmscope.* attribute constants
+│   └── gateway/
+│       ├── client.py          ← call_llm() — the choke point
+│       ├── provider.py        ← ProviderBase, OpenAI, Anthropic
+│       ├── telemetry.py       ← emit() — OTel + JSONL dual-write
+│       ├── cost_model.py      ← estimate_cost()
+│       ├── policies.py        ← RoutePolicy per route
+│       ├── otel_setup.py      ← setup_otel(), shutdown_otel()
+│       └── semconv.py         ← gen_ai.* attribute constants
+├── app/                       ← reference FastAPI app (not pip-installed)
+├── evals/                     ← eval harness (not pip-installed)
+├── reporting/                 ← report generator (not pip-installed)
+└── tests/
+```
+
 ## Setup
 
 ```bash
@@ -206,7 +229,7 @@ OTEL_SDK_DISABLED=true python3 -m pytest tests/ -q
 ```bash
 python3 -m ruff check .
 python3 -m ruff format --check .
-python3 -m mypy app/ gateway/ evals/ reporting/ core/ --ignore-missing-imports
+python3 -m mypy src/llmscope/ app/ evals/ reporting/ --ignore-missing-imports
 ```
 
 ## Eval runners
@@ -300,7 +323,7 @@ from llmscope import (
 
 **JSONL schema** — telemetry events include a `schema_version` field. New fields may appear in minor versions. Consumers should tolerate unknown keys (do not use `extra="forbid"` in Pydantic validators for telemetry events).
 
-**OTel attribute namespace** — the `llmscope.*` attribute names defined in `llmscope/semconv.py` are stable from v0.1.0. They will not be renamed or removed without a major version bump. The `gen_ai.*` attributes follow the OpenTelemetry GenAI Semantic Conventions and may change according to the upstream spec via `OTEL_SEMCONV_STABILITY_OPT_IN`.
+**OTel attribute namespace** — the `llmscope.*` attribute names defined in `src/llmscope/semconv.py` are stable from v0.1.0. They will not be renamed or removed without a major version bump. The `gen_ai.*` attributes follow the OpenTelemetry GenAI Semantic Conventions and may change according to the upstream spec via `OTEL_SEMCONV_STABILITY_OPT_IN`.
 
 **Cost model** — model pricing values are configuration, not API. They may be updated in any version to reflect current provider pricing. The `estimate_cost()` function signature is stable.
 
@@ -308,9 +331,10 @@ from llmscope import (
 
 Not a general-purpose agent framework, a notebook-based experiment, a semantic evaluation suite, a dashboard product, or a production SaaS system. It is a small, inspectable engineering artifact that shows how to build the core of an LLM control plane with explicit gateway boundaries, a provider-agnostic abstraction, cost-aware routing visibility, OpenTelemetry instrumentation, a versioned envelope contract, local run artifacts for offline analysis, regression discipline, and deterministic reporting.
 
+## Related projects
+
+- [llm-eval-gate](https://github.com/lucianareynaud/llm-eval-gate) — Evidence-based quality gate that consumes LLMScope telemetry to produce go/no-go deployment decisions.
+
 ## Tooling
 
-Specs under `.kiro/` were authored using Kiro for structured design
-documentation. Architecture decisions, instrumentation boundaries, and
-semantic convention alignment reflect production experience with
-OpenTelemetry GenAI conventions and cost attribution in regulated environments.
+Specs under `.kiro/` were authored using Kiro for structured design documentation. Architecture decisions, instrumentation boundaries, and semantic convention alignment reflect production experience with OpenTelemetry GenAI conventions and cost attribution in regulated environments.
