@@ -41,10 +41,10 @@ guards are needed here.
 
 from __future__ import annotations
 
-import os
 import fcntl
 import json
 import logging
+import os
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
