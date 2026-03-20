@@ -79,9 +79,7 @@ logger = logging.getLogger(__name__)
 # ─────────────────────────────────────────────────────────────────────────────
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 _DEFAULT_TELEMETRY_PATH = _PROJECT_ROOT / "artifacts" / "logs" / "telemetry.jsonl"
-TELEMETRY_PATH = Path(
-    os.environ.get("LLMSCOPE_TELEMETRY_PATH", str(_DEFAULT_TELEMETRY_PATH))
-)
+TELEMETRY_PATH = Path(os.environ.get("LLMSCOPE_TELEMETRY_PATH", str(_DEFAULT_TELEMETRY_PATH)))
 
 # ─────────────────────────────────────────────────────────────────────────────
 # OTel Meter — module-level singleton
