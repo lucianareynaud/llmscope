@@ -24,7 +24,7 @@ All checks must pass before any task in this spec begins.
 
 - `core/__init__.py`
 - `core/envelope.py`
-- `core/semconv.py`
+- `llmscope/semconv.py`
 - `tests/test_envelope.py`
 
 ## What this spec changes
@@ -59,7 +59,7 @@ Without that contract:
 ## Acceptance criteria
 
 1. `core/envelope.py` exists and imports cleanly without importing `fastapi` or `starlette`.
-2. `core/semconv.py` exists and defines the initial project namespace constants required by this spec.
+2. `llmscope/semconv.py` exists and defines the initial project namespace constants required by this spec.
 3. The envelope includes explicit fields for:
    - `schema_version`
    - identity/context
@@ -156,7 +156,7 @@ They may exist in sink-specific evidence, but not in the primary contract.
 This spec is complete when:
 
 - `core/envelope.py` exists
-- `core/semconv.py` exists
+- `llmscope/semconv.py` exists
 - the envelope schema is importable and typed
 - `cost_source`, `circuit_state`, and `cache_key_algorithm` are present
 - `tests/test_envelope.py` passes

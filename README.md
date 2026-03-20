@@ -300,7 +300,7 @@ from llmscope import (
 
 **JSONL schema** — telemetry events include a `schema_version` field. New fields may appear in minor versions. Consumers should tolerate unknown keys (do not use `extra="forbid"` in Pydantic validators for telemetry events).
 
-**OTel attribute namespace** — the `llmscope.*` attribute names defined in `core/semconv.py` are stable from v0.1.0. They will not be renamed or removed without a major version bump. The `gen_ai.*` attributes follow the OpenTelemetry GenAI Semantic Conventions and may change according to the upstream spec via `OTEL_SEMCONV_STABILITY_OPT_IN`.
+**OTel attribute namespace** — the `llmscope.*` attribute names defined in `llmscope/semconv.py` are stable from v0.1.0. They will not be renamed or removed without a major version bump. The `gen_ai.*` attributes follow the OpenTelemetry GenAI Semantic Conventions and may change according to the upstream spec via `OTEL_SEMCONV_STABILITY_OPT_IN`.
 
 **Cost model** — model pricing values are configuration, not API. They may be updated in any version to reflect current provider pricing. The `estimate_cost()` function signature is stable.
 

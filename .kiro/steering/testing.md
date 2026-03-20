@@ -164,7 +164,7 @@ def test_cache_hit_has_cached_zero_cost_source(span_exporter, mock_cache_hit):
     assert spans[0].attributes["llmscope.estimated_cost_usd"] == 0.0
 ```
 
-Never assert on hardcoded field values that bypass `core/semconv.py` constants. Always use
+Never assert on hardcoded field values that bypass `llmscope/semconv.py` constants. Always use
 the constant:
 
 ```python

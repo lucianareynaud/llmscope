@@ -147,7 +147,7 @@ with _tracer.start_as_current_span("chat gpt-4o-mini", kind=trace.SpanKind.CLIEN
 
 - `gen_ai.*` — semconv official fields. Import from `gateway/semconv.py` constants only.
   Never import directly from `opentelemetry.semconv._incubating` in application code.
-- `llmscope.*` — proprietary control-plane fields. Import from `core/semconv.py` constants.
+- `llmscope.*` — proprietary control-plane fields. Import from `llmscope/semconv.py` constants.
   Replaces `llm_gateway.*` progressively. Do not introduce new `llm_gateway.*` attributes.
 - Do not invent new attribute namespaces without updating `010a-envelope/spec.md` first.
 
@@ -166,7 +166,7 @@ with _tracer.start_as_current_span("chat gpt-4o-mini", kind=trace.SpanKind.CLIEN
 ## Semantic conventions to follow
 
 All LLM-related spans and metrics must use `gen_ai.*` semconv from `gateway/semconv.py`
-plus `llmscope.*` from `core/semconv.py` (after spec 010a).
+plus `llmscope.*` from `llmscope/semconv.py` (after spec 010a).
 
 ### Span attributes — full set
 
@@ -179,25 +179,25 @@ plus `llmscope.*` from `core/semconv.py` (after spec 010a).
 | `gen_ai.response.model` | gateway/semconv.py | routed (event) |
 | `gen_ai.usage.input_tokens` | gateway/semconv.py | completed |
 | `gen_ai.usage.output_tokens` | gateway/semconv.py | completed |
-| `llmscope.schema_version` | core/semconv.py | received |
-| `llmscope.request_id` | core/semconv.py | received |
-| `llmscope.tenant_id` | core/semconv.py | received |
-| `llmscope.use_case` | core/semconv.py | received |
-| `llmscope.route` | core/semconv.py | received |
-| `llmscope.runtime_mode` | core/semconv.py | received |
-| `llmscope.model_tier` | core/semconv.py | routed |
-| `llmscope.routing_decision` | core/semconv.py | routed |
-| `llmscope.policy_decision` | core/semconv.py | routed |
-| `llmscope.policy_mode` | core/semconv.py | routed |
-| `llmscope.estimated_cost_usd` | core/semconv.py | completed |
-| `llmscope.cost_source` | core/semconv.py | completed |
-| `llmscope.status` | core/semconv.py | completed/failed |
-| `llmscope.latency_ms` | core/semconv.py | completed/failed |
-| `llmscope.cache_strategy` | core/semconv.py | completed |
-| `llmscope.cache_hit` | core/semconv.py | completed |
-| `llmscope.cache_key_fingerprint` | core/semconv.py | completed |
-| `llmscope.circuit_state` | core/semconv.py | completed/failed |
-| `llmscope.retry_count` | core/semconv.py | failed |
+| `llmscope.schema_version` | llmscope/semconv.py | received |
+| `llmscope.request_id` | llmscope/semconv.py | received |
+| `llmscope.tenant_id` | llmscope/semconv.py | received |
+| `llmscope.use_case` | llmscope/semconv.py | received |
+| `llmscope.route` | llmscope/semconv.py | received |
+| `llmscope.runtime_mode` | llmscope/semconv.py | received |
+| `llmscope.model_tier` | llmscope/semconv.py | routed |
+| `llmscope.routing_decision` | llmscope/semconv.py | routed |
+| `llmscope.policy_decision` | llmscope/semconv.py | routed |
+| `llmscope.policy_mode` | llmscope/semconv.py | routed |
+| `llmscope.estimated_cost_usd` | llmscope/semconv.py | completed |
+| `llmscope.cost_source` | llmscope/semconv.py | completed |
+| `llmscope.status` | llmscope/semconv.py | completed/failed |
+| `llmscope.latency_ms` | llmscope/semconv.py | completed/failed |
+| `llmscope.cache_strategy` | llmscope/semconv.py | completed |
+| `llmscope.cache_hit` | llmscope/semconv.py | completed |
+| `llmscope.cache_key_fingerprint` | llmscope/semconv.py | completed |
+| `llmscope.circuit_state` | llmscope/semconv.py | completed/failed |
+| `llmscope.retry_count` | llmscope/semconv.py | failed |
 | `error.type` | OTel standard | failed |
 
 ### Metrics (from `gateway/telemetry.py`)

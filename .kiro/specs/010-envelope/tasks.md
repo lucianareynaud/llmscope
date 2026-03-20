@@ -26,16 +26,16 @@ If the suite is not green, stop and fix that first.
 
 ---
 
-### Task 2 — Create `core/semconv.py`
+### Task 2 — Create `llmscope/semconv.py`
 
-- [ ] 2.1 Create `core/semconv.py`
+- [ ] 2.1 Create `llmscope/semconv.py`
 - [ ] 2.2 Define project namespace constants for 010a
 - [ ] 2.3 Include at minimum:
   - `ATTR_LLMSCOPE_SCHEMA_VERSION = "llmscope.schema_version"`
   - `ATTR_LLMSCOPE_COST_SOURCE = "llmscope.cost_source"`
 - [ ] 2.4 Optionally define future constants, but do not trigger broad migration in this spec
-- [ ] 2.5 `ruff check core/semconv.py`
-- [ ] 2.6 `mypy core/semconv.py --ignore-missing-imports`
+- [ ] 2.5 `ruff check llmscope/semconv.py`
+- [ ] 2.6 `mypy llmscope/semconv.py --ignore-missing-imports`
 
 **Acceptance**: module imports, constants exist, no framework imports.
 
@@ -145,7 +145,7 @@ Do not skip this checkpoint.
 This spec is complete when:
 
 - `core/__init__.py` exists
-- `core/semconv.py` exists
+- `llmscope/semconv.py` exists
 - `core/envelope.py` exists
 - `tests/test_envelope.py` passes
 - `schema_version` and `cost_source` are wired additively

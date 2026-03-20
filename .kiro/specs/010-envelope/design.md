@@ -77,7 +77,7 @@ A reasonable v0 structure is:
   - `eval_hooks | tuple[str, ...]`
   - `audit_tags | dict[str, str]`
 
-### `core/semconv.py`
+### `llmscope/semconv.py`
 
 This module defines only the project-specific constants needed in 010a.
 

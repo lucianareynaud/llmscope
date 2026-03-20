@@ -105,7 +105,7 @@ Route Handler (async)      app/routes/
 ### `core/` (decision + evidence, runtime-agnostic)
 
 - `core/envelope.py` — `LLMRequestEnvelope` dataclass and all enums
-- `core/semconv.py` — `llmscope.*` attribute name constants
+- `llmscope/semconv.py` — `llmscope.*` attribute name constants
 
 Future additions (spec 011+):
 - `core/policy.py` — typed policy evaluation
