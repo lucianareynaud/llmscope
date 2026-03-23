@@ -445,8 +445,16 @@ def _write_jsonl_event(
 
     if metadata:
         # Flat merge: metadata keys overwrite base event keys on collision.
-        # This is intentional — routes can override base fields if needed.
-        event.update(metadata)
+        # Exception: when envelope is provided, do not overwrite attribution fields
+        # (tenant_id, caller_id, use_case) as these come from structured context.
+        if envelope is not None:
+            protected_fields = {"tenant_id", "caller_id", "use_case", "audit_tags"}
+            for key, value in metadata.items():
+                if key not in protected_fields:
+                    event[key] = value
+        else:
+            # No envelope: allow full metadata merge for backward compatibility
+            event.update(metadata)
 
     TELEMETRY_PATH.parent.mkdir(parents=True, exist_ok=True)
 

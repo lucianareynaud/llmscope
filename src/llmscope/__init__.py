@@ -5,6 +5,7 @@ Internal module paths (llmscope.gateway.client, etc.) are implementation
 details and may change between minor versions.
 """
 
+from llmscope.context import LLMRequestContext
 from llmscope.envelope import (
     CostSource,
     EnvelopeStatus,
@@ -35,6 +36,7 @@ __all__ = [
     "CostSource",
     "EnvelopeStatus",
     "GatewayResult",
+    "LLMRequestContext",
     "LLMRequestEnvelope",
     "OpenAIProvider",
     "ProviderBase",

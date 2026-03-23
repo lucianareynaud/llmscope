@@ -41,6 +41,7 @@ from typing import Any, Literal
 from opentelemetry import trace
 from opentelemetry.trace import SpanKind, Status, StatusCode
 
+from llmscope.context import LLMRequestContext
 from llmscope.envelope import (
     CostSource,
     EnvelopeStatus,
@@ -92,6 +93,7 @@ async def call_llm(
     model_tier: ModelTier,
     route_name: GatewayRouteName,
     metadata: dict[str, Any] | None = None,
+    context: LLMRequestContext | None = None,
 ) -> GatewayResult:
     """Execute one LLM call through the gateway.
 
@@ -101,7 +103,9 @@ async def call_llm(
         prompt:      Prepared prompt or context string.
         model_tier:  Logical tier ("cheap" or "expensive").
         route_name:  Gateway route identifier.
-        metadata:    Optional route-specific key-values for telemetry.
+        metadata:    Optional route-specific key-values for telemetry (legacy).
+        context:     Optional structured request context for attribution (preferred).
+                     When provided, takes precedence over metadata for attribution fields.
 
     Returns:
         GatewayResult with response text, model, token counts, cost.
@@ -114,6 +118,17 @@ async def call_llm(
     policy = get_route_policy(route_name)
     selected_model = get_model_for_tier(route_name, model_tier)
     provider = get_provider(policy.provider_name)
+
+    # Resolve effective context: context parameter takes precedence over metadata
+    effective_context = context if context is not None else LLMRequestContext.from_metadata(metadata)
+
+    # Extract attribution fields from effective context
+    tenant_id = effective_context.tenant_id or "default"
+    caller_id = effective_context.caller_id
+    use_case = effective_context.use_case
+
+    # Derive audit tags from context
+    audit_tags = effective_context.to_audit_tags()
 
     telemetry_metadata = dict(metadata or {})
     telemetry_metadata["selected_model"] = selected_model
@@ -135,6 +150,13 @@ async def call_llm(
         span.set_attribute("llm_gateway.route", route_name)
         span.set_attribute("llm_gateway.model_tier", model_tier)
         span.set_attribute("llm_gateway.request_id", request_id)
+        span.set_attribute("llm_gateway.tenant_id", tenant_id)
+        if caller_id is not None:
+            span.set_attribute("llm_gateway.caller_id", caller_id)
+        if use_case is not None:
+            span.set_attribute("llm_gateway.use_case", use_case)
+        for tag_key, tag_value in audit_tags.items():
+            span.set_attribute(f"llm_gateway.audit.{tag_key}", tag_value)
         span.set_attribute(
             "llm_gateway.retry_attempts_allowed",
             policy.retry_attempts,
@@ -171,7 +193,9 @@ async def call_llm(
             envelope = LLMRequestEnvelope(
                 schema_version="0.1.0",
                 request_id=request_id,
-                tenant_id="default",
+                tenant_id=tenant_id,
+                caller_id=caller_id,
+                use_case=use_case,
                 route=route_name,
                 provider_selected=provider.provider_name,
                 model_selected=selected_model,
@@ -185,6 +209,7 @@ async def call_llm(
                 latency_ms=latency_ms,
                 status=EnvelopeStatus.OK,
                 cache_hit=False,
+                audit_tags=audit_tags,
             )
 
             emit(
@@ -226,7 +251,9 @@ async def call_llm(
             envelope = LLMRequestEnvelope(
                 schema_version="0.1.0",
                 request_id=request_id,
-                tenant_id="default",
+                tenant_id=tenant_id,
+                caller_id=caller_id,
+                use_case=use_case,
                 route=route_name,
                 provider_selected=provider.provider_name,
                 model_selected=selected_model,
@@ -241,6 +268,7 @@ async def call_llm(
                 status=EnvelopeStatus.ERROR,
                 error_type=error_type,
                 cache_hit=False,
+                audit_tags=audit_tags,
             )
 
             emit(
