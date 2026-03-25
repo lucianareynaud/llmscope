@@ -187,9 +187,7 @@ class TestContextPropagation:
                     "budget_namespace": "support-team",
                 }
 
-    async def test_call_llm_error_path_preserves_context(
-        self, tmp_path, monkeypatch
-    ):
+    async def test_call_llm_error_path_preserves_context(self, tmp_path, monkeypatch):
         """Context should be preserved in envelope even on error."""
         test_telemetry = tmp_path / "telemetry.jsonl"
         monkeypatch.setattr("llmscope.gateway.telemetry.TELEMETRY_PATH", test_telemetry)
