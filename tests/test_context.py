@@ -53,7 +53,7 @@ class TestLLMRequestContext:
         """Context should be immutable after creation."""
         ctx = LLMRequestContext(tenant_id="acme-corp")
 
-        with pytest.raises(Exception):  # FrozenInstanceError or AttributeError
+        with pytest.raises((AttributeError, TypeError)):
             ctx.tenant_id = "other-corp"  # type: ignore[misc]
 
     def test_from_metadata_with_none(self):

@@ -120,7 +120,9 @@ async def call_llm(
     provider = get_provider(policy.provider_name)
 
     # Resolve effective context: context parameter takes precedence over metadata
-    effective_context = context if context is not None else LLMRequestContext.from_metadata(metadata)
+    effective_context = (
+        context if context is not None else LLMRequestContext.from_metadata(metadata)
+    )
 
     # Extract attribution fields from effective context
     tenant_id = effective_context.tenant_id or "default"
