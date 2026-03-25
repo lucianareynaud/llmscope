@@ -209,9 +209,25 @@ class OpenAIProvider(ProviderBase):
     Env var: ``OPENAI_API_KEY``
     """
 
+    def __init__(self) -> None:
+        self._client = None
+
     @property
     def provider_name(self) -> str:
         return "openai"
+
+    def _get_client(self):
+        """Lazy-initialize and return the cached AsyncOpenAI client."""
+        if self._client is None:
+            from openai import AsyncOpenAI
+
+            api_key = os.getenv("OPENAI_API_KEY")
+            if not api_key:
+                raise ValueError("OPENAI_API_KEY environment variable not set")
+
+            self._client = AsyncOpenAI(api_key=api_key)
+
+        return self._client
 
     async def complete(
         self,
@@ -219,13 +235,7 @@ class OpenAIProvider(ProviderBase):
         model: str,
         max_output_tokens: int,
     ) -> ProviderResponse:
-        from openai import AsyncOpenAI
-
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise ValueError("OPENAI_API_KEY environment variable not set")
-
-        client = AsyncOpenAI(api_key=api_key)
+        client = self._get_client()
         response = await client.responses.create(
             model=model,
             input=prompt,
@@ -287,9 +297,25 @@ class AnthropicProvider(ProviderBase):
     Env var: ``ANTHROPIC_API_KEY``
     """
 
+    def __init__(self) -> None:
+        self._client = None
+
     @property
     def provider_name(self) -> str:
         return "anthropic"
+
+    def _get_client(self):
+        """Lazy-initialize and return the cached AsyncAnthropic client."""
+        if self._client is None:
+            import anthropic
+
+            api_key = os.getenv("ANTHROPIC_API_KEY")
+            if not api_key:
+                raise ValueError("ANTHROPIC_API_KEY environment variable not set")
+
+            self._client = anthropic.AsyncAnthropic(api_key=api_key)
+
+        return self._client
 
     async def complete(
         self,
@@ -297,13 +323,7 @@ class AnthropicProvider(ProviderBase):
         model: str,
         max_output_tokens: int,
     ) -> ProviderResponse:
-        import anthropic
-
-        api_key = os.getenv("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise ValueError("ANTHROPIC_API_KEY environment variable not set")
-
-        client = anthropic.AsyncAnthropic(api_key=api_key)
+        client = self._get_client()
         response = await client.messages.create(
             model=model,
             max_tokens=max_output_tokens,
