@@ -41,6 +41,9 @@ guards are needed here.
 
 from __future__ import annotations
 
+# NOTE: POSIX-only. JSONL artifact locking requires fcntl (Linux/macOS).
+# Windows environments should set LLMSCOPE_TELEMETRY_PATH to a no-op
+# sink or run behind a single-writer process model.
 import fcntl
 import json
 import logging
@@ -409,6 +412,12 @@ def _write_jsonl_event(
 
     PATH NOTE: TELEMETRY_PATH is resolved relative to this file's directory
     (see module top) so it is stable regardless of process CWD.
+
+    Platform:
+        POSIX-only (Linux/macOS). File locking uses fcntl.flock which is not
+        available on Windows. Windows deployments should either:
+        - Set LLMSCOPE_TELEMETRY_PATH to a no-op sink (e.g., /dev/null)
+        - Run behind a single-writer process model (no concurrent workers)
     """
     if envelope is not None:
         # Use envelope as base — the contract is the source of truth
