@@ -78,6 +78,9 @@ warn_unused_ignores = true
 warn_unused_configs = true
 no_implicit_optional = true
 strict_equality = true
+# OTel SDK and semconv packages lack complete type stubs.
+# Required for py.typed compliance with current dependency set.
+# Remove when opentelemetry-api ships inline types.
 ignore_missing_imports = true
 
 # ── Pytest ───────────────────────────────────────────────────────────

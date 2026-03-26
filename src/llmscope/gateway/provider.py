@@ -330,7 +330,7 @@ class AnthropicProvider(ProviderBase):
             messages=[{"role": "user", "content": prompt}],
         )
 
-        text = response.content[0].text if response.content else ""  # type: ignore[union-attr]
+        text = response.content[0].text if response.content else ""
         tokens_in = response.usage.input_tokens
         tokens_out = response.usage.output_tokens
 
