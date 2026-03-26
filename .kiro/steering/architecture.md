@@ -115,7 +115,7 @@ Future additions (spec 011+):
 ### `gateway/` (gateway runtime — instrumentation + actuation)
 
 - `client.py` — `async def call_llm()`: sole provider call path; emits lifecycle events
-- `cache.py` — exact cache module (opinado); semantic cache interface (adapter)
+- `cache.py` — exact cache module (opinionated); semantic cache interface (adapter)
 - `circuit_breaker.py` — three-state machine for provider resilience
 - `cost_model.py` — pricing snapshot (to be promoted to `core/` in spec 011)
 - `policies.py` — `RoutePolicy` frozen dataclass; model-for-tier mapping
