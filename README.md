@@ -272,6 +272,34 @@ python3 -m reporting.make_report \
   --output artifacts/reports/report.md
 ```
 
+## Example output
+
+The `examples/` directory contains pre-generated artifacts that demonstrate the telemetry pipeline end-to-end without requiring API keys or a running server.
+
+**`examples/sample_telemetry.jsonl`** — 10 synthetic gateway events covering both routes, both model tiers, success and error scenarios. Each event answers the three core questions directly:
+
+```json
+{
+  "route": "/answer-routed",
+  "model_selected": "gpt-4o",
+  "routing_decision": "expensive",
+  "estimated_cost_usd": 0.00425,
+  "cost_source": "estimated_local_snapshot",
+  "tokens_in": 500,
+  "tokens_out": 300
+}
+```
+
+**`examples/sample_report.md`** — The deterministic markdown report generated from the sample telemetry, showing per-route cost aggregation, Pareto analysis, and operational recommendations.
+
+Regenerate:
+
+```bash
+python3 -m reporting.make_report \
+  --after-log examples/sample_telemetry.jsonl \
+  --output examples/sample_report.md
+```
+
 ## Telemetry event shape
 
 Each gateway call serializes an `LLMRequestEnvelope` as one JSON line to `artifacts/logs/telemetry.jsonl`:
