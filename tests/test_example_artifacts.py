@@ -75,20 +75,16 @@ def test_sample_telemetry_cost_correctness():
 
         if event["status"] == "success":
             expected_cost = estimate_cost(model, tokens_in, tokens_out)
-            assert reported_cost == pytest.approx(
-                expected_cost, abs=1e-7
-            ), f"Line {i}: cost mismatch"
+            assert reported_cost == pytest.approx(expected_cost, abs=1e-7), (
+                f"Line {i}: cost mismatch"
+            )
         else:
-            assert (
-                reported_cost == 0.0
-            ), f"Line {i}: error event should have zero cost"
+            assert reported_cost == 0.0, f"Line {i}: error event should have zero cost"
 
 
 def test_sample_telemetry_normalizes_for_reporting():
     """Validate telemetry normalizes correctly for the reporting pipeline."""
-    normalized_rows, malformed_count = load_jsonl_telemetry(
-        str(SAMPLE_TELEMETRY_PATH)
-    )
+    normalized_rows, malformed_count = load_jsonl_telemetry(str(SAMPLE_TELEMETRY_PATH))
 
     assert len(normalized_rows) == 10, "Expected 10 normalized rows"
     assert malformed_count == 0, f"Expected 0 malformed rows, got {malformed_count}"
@@ -106,9 +102,7 @@ def test_sample_report_exists():
 def test_report_generator_produces_output():
     """Validate report generator can consume sample telemetry and produce output."""
     # Load telemetry
-    normalized_rows, malformed_count = load_jsonl_telemetry(
-        str(SAMPLE_TELEMETRY_PATH)
-    )
+    normalized_rows, malformed_count = load_jsonl_telemetry(str(SAMPLE_TELEMETRY_PATH))
     assert len(normalized_rows) > 0, "No normalized rows loaded"
 
     # Build aggregates
