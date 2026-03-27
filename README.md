@@ -38,9 +38,11 @@ This repository demonstrates the control-plane layer for accountable AI systems:
 
 - **Auth and rate limiting** — API key validation via X-API-Key header (constant-time comparison), per-caller sliding window rate limiting (in-memory deque).
 
-**243+ tests, GitHub Actions CI (ruff, mypy, pytest).**
+**257 tests, GitHub Actions CI (ruff, mypy, pytest).**
 
 ## Architecture
+
+Current implementation (v0.1.0):
 
 ```
 HTTP Request
@@ -56,6 +58,7 @@ HTTP Request
                                      ├── RoutePolicy lookup (tier → model mapping)
                                      ├── LLMRequestContext resolution
                                      ├── OTel CLIENT span start
+                                     ├── Retry loop with exponential backoff
                                      ├── ProviderBase.complete() → OpenAI/Anthropic
                                      ├── estimate_cost()
                                      ├── LLMRequestEnvelope construction
@@ -129,7 +132,7 @@ llmscope/
 ├── evals/                     ← eval harness
 ├── reporting/                 ← report generator
 ├── examples/                  ← sample artifacts
-└── tests/                     ← 243+ tests
+└── tests/                     ← 257 tests
 ```
 
 ## Local setup
