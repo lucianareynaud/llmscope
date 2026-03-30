@@ -271,3 +271,7 @@ from llmscope import (
 ## Development
 
 Specs under `.kiro/` document architecture decisions, instrumentation boundaries, and semantic convention alignment. The repository reflects production experience with OpenTelemetry GenAI conventions and cost attribution in regulated environments.
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
